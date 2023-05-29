@@ -9,14 +9,6 @@ export const config = {
   regions: "bom1", // location: ap-south-1 (optional)
 };
 
-type EmbeddingResponse = {
-  data: [
-    {
-      embedding: string;
-    }
-  ];
-};
-
 export type PGChunk = {
   id: number;
   article_title: string;
@@ -32,39 +24,15 @@ export const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_KEY);
 
 const answer = async (request: NextRequest): Promise<NextResponse> => {
   try {
-    const { query } = (await request.json()) as {
+    const { chunks, query } = (await request.json()) as {
+      chunks: PGChunk[];
       query: string;
     };
 
     const processedQuery = query.replace(/\n/g, " ");
     console.log({ processedQuery });
 
-    const queryEmbeddingRes = await fetch(
-      "https://api.openai.com/v1/embeddings",
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-        },
-        method: "POST",
-        body: JSON.stringify({
-          model: "text-embedding-ada-002",
-          input: processedQuery,
-        }),
-      }
-    );
-
-    const json = (await queryEmbeddingRes?.json()) as EmbeddingResponse;
-    const queryEmbedding = `[${String(json?.data[0]?.embedding)}]`;
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const { data: chunks } = await supabase.rpc("article_search", {
-      query_embedding: queryEmbedding,
-      similarity_threshold: 0.01,
-      match_count: 3,
-    });
-
-    const prompt = getPrompt(processedQuery, chunks as PGChunk[]);
+    const prompt = getPrompt(processedQuery, chunks);
 
     console.log({ prompt });
 

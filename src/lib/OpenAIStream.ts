@@ -55,7 +55,7 @@ export async function OpenAIStream(payload: OpenAIStreamPayload) {
               choices: [
                 {
                   delta: {
-                    content: "Example content";
+                    content: string;
                   };
                 }
               ];

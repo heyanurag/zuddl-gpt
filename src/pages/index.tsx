@@ -3,20 +3,39 @@ import Head from "next/head";
 import { type NextPage } from "next";
 import { SearchIcon, ArrowRightIcon } from "lucide-react";
 
+type ChunkData = {
+  id: number,
+  article_title: string,
+  article_url: string,
+  content: string,
+}
+
 const Home: NextPage = () => {
   const [query, setQuery] = useState<string>("");
   const [answer, setAnswer] = useState<string>("");
+  const [chunks, setChunks] = useState<ChunkData[]>([]);
 
   const handleSearch = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log(query);
+
+    const chunkResponse = await fetch("/api/search", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    const chunks = await chunkResponse.json() as ChunkData[];
+    setChunks(chunks);
 
     const answerResponse = await fetch("/api/answer", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query }),
+      body: JSON.stringify({ chunks, query }),
     });
 
     const data = answerResponse.body as ReadableStream;
@@ -70,6 +89,7 @@ const Home: NextPage = () => {
               <ArrowRightIcon className="absolute right-2 top-2.5 h-7 w-7 rounded-full bg-primary p-1 text-white hover:cursor-pointer hover:opacity-80 sm:right-3 sm:top-3 sm:h-10 sm:w-10" />
             </button>
           </form>
+          {/* TODO: Markdown Parser */}
           <div>{answer}</div>
         </div>
       </main>
