@@ -11,6 +11,7 @@ export const env = createEnv({
     OPENAI_API_KEY: z.string().min(10),
     SUPABASE_URL: z.string().min(10),
     SUPABASE_KEY: z.string().min(10),
+    RESPONSE_MAX_TOKENS: z.number().int().min(100).max(1024),
   },
 
   /**
@@ -31,6 +32,7 @@ export const env = createEnv({
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     SUPABASE_URL: process.env.SUPABASE_URL,
     SUPABASE_KEY: process.env.SUPABASE_KEY,
+    RESPONSE_MAX_TOKENS: Number(process.env.RESPONSE_MAX_TOKENS),
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

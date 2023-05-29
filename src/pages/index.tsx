@@ -5,10 +5,37 @@ import { SearchIcon, ArrowRightIcon } from "lucide-react";
 
 const Home: NextPage = () => {
   const [query, setQuery] = useState<string>("");
+  const [answer, setAnswer] = useState<string>("");
 
-  const handleSearch = (e: FormEvent<HTMLFormElement>) => {
+  const handleSearch = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log(query);
+
+    const answerResponse = await fetch("/api/answer", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    const data = answerResponse.body as ReadableStream;
+    const reader = data.getReader();
+    const decoder = new TextDecoder();
+    let done = false;
+
+    while (!done) {
+      const { value, done: doneReading } = (await reader.read()) as {
+        value: BufferSource;
+        done: boolean;
+      };
+      done = doneReading;
+      const chunkValue = decoder.decode(value);
+      setAnswer((prev) => {
+        console.log({ prev, chunkValue });
+        return prev + chunkValue;
+      });
+    }
   };
 
   return (
@@ -26,6 +53,7 @@ const Home: NextPage = () => {
           <div className="text-center text-lg">
             AI-powered search for Zuddl&apos;s knowledge base
           </div>
+          {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
           <form className="relative w-full" onSubmit={handleSearch}>
             <SearchIcon className="absolute left-1 top-3 h-6 w-10 rounded-full opacity-90 sm:left-3 sm:top-4 sm:h-8" />
 
@@ -42,6 +70,7 @@ const Home: NextPage = () => {
               <ArrowRightIcon className="absolute right-2 top-2.5 h-7 w-7 rounded-full bg-primary p-1 text-white hover:cursor-pointer hover:opacity-80 sm:right-3 sm:top-3 sm:h-10 sm:w-10" />
             </button>
           </form>
+          <div>{answer}</div>
         </div>
       </main>
     </>

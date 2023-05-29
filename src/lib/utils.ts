@@ -9,8 +9,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_KEY);
-
 export const getPrompt = (query: string, chunks: PGChunk[]) => {
   const prompt = stripIndent`${oneLine`
     You are a very enthusiastic Zuddl representativeand an experienced event

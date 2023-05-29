@@ -51,9 +51,15 @@ export async function OpenAIStream(payload: OpenAIStreamPayload) {
             return;
           }
           try {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const json = JSON.parse(data);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            const json = JSON.parse(data) as {
+              choices: [
+                {
+                  delta: {
+                    content: "Example content";
+                  };
+                }
+              ];
+            };
             const text = String(json?.choices[0]?.delta?.content) || "";
             if (counter < 2 && (text.match(/\n/) || []).length) {
               // this is a prefix character (i.e., "\n\n"), do nothing
@@ -73,6 +79,7 @@ export async function OpenAIStream(payload: OpenAIStreamPayload) {
       // this ensures we properly read chunks and invoke an event for each SSE event stream
       const parser = createParser(onParse);
       // https://web.dev/streams/#asynchronous-iteration
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       for await (const chunk of res.body as any) {
         parser.feed(decoder.decode(chunk as BufferSource));
       }
