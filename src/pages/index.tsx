@@ -3,8 +3,8 @@ import Head from "next/head";
 import { type NextPage } from "next";
 import { SearchIcon, ArrowRightIcon } from "lucide-react";
 import { type ChunkData } from "@/lib/types";
-import { marked } from 'marked';
-import DOMPurify from 'isomorphic-dompurify';
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 enum RenderState {
   EMPTY = "empty",
@@ -23,6 +23,9 @@ const Home: NextPage = () => {
     e.preventDefault();
     console.log(query);
 
+    setQuery("");
+    setAnswer("");
+    setChunks([]);
     setRenderState(RenderState.FETCHING);
 
     const chunkResponse = await fetch("/api/search", {
@@ -62,7 +65,7 @@ const Home: NextPage = () => {
         console.log({ prev, chunkValue });
         const raw = prev + chunkValue;
         const trimmedContent = raw.replace(/^undefined|undefined$/g, '');
-        return trimmedContent.replace(/\n/g, '<br />');
+        return trimmedContent;
       });
     }
 
@@ -90,21 +93,33 @@ const Home: NextPage = () => {
         return (
           <>
             <div className="font-bold text-2xl self-start">Answer</div>
-            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked(answer)) }} className="self-start"></div>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              linkTarget="_blank"
+              className="prose"
+            >
+              {answer}
+            </ReactMarkdown>
           </>
         );
       case RenderState.LOADED:
         return (
           <>
             <div className="font-bold text-2xl self-start">Answer</div>
-            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked(answer)) }} className="self-start"></div>
-            <div className="font-bold text-2xl self-start mt-2">Related Passages</div>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              linkTarget="_blank"
+              className="prose"
+            >
+              {answer}
+            </ReactMarkdown>
+            <div className="font-bold text-2xl self-start my-4">Related Passages</div>
             {chunks && chunks.map((chunk) => {
               const title_array = chunk.article_title.split(":");
               const title = title_array.slice(0, -1).join(":");
 
               return (
-                <div key={chunk.id} className="relative w-full bg-white shadow-md rounded-lg border border-black">
+                <div key={chunk.id} className="mb-6 relative w-full bg-white shadow-md rounded-lg border border-black">
                   <div className="p-4">
                     <h3 className="text-xl font-bold mb-2">{title}</h3>
                     <p className="text-gray-600">{chunk.content}</p>
@@ -161,7 +176,9 @@ const Home: NextPage = () => {
               <ArrowRightIcon className="absolute right-2 top-2.5 h-7 w-7 rounded-full bg-primary p-1 text-white hover:cursor-pointer hover:opacity-80 sm:right-3 sm:top-3 sm:h-10 sm:w-10" />
             </button>
           </form>
-          {renderResponses()}
+          <div>
+            {renderResponses()}
+          </div>
         </div>
       </main>
     </>
