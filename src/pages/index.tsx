@@ -2,22 +2,28 @@ import { useState, type FormEvent } from "react";
 import Head from "next/head";
 import { type NextPage } from "next";
 import { SearchIcon, ArrowRightIcon } from "lucide-react";
+import { type ChunkData } from "@/lib/types";
+import { marked } from 'marked';
+import DOMPurify from 'isomorphic-dompurify';
 
-type ChunkData = {
-  id: number,
-  article_title: string,
-  article_url: string,
-  content: string,
+enum RenderState {
+  EMPTY = "empty",
+  FETCHING = "fetching",
+  RENDERING = "rendering",
+  LOADED = "loaded",
 }
 
 const Home: NextPage = () => {
   const [query, setQuery] = useState<string>("");
   const [answer, setAnswer] = useState<string>("");
   const [chunks, setChunks] = useState<ChunkData[]>([]);
+  const [renderState, setRenderState] = useState<RenderState>(RenderState.EMPTY);
 
   const handleSearch = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log(query);
+
+    setRenderState(RenderState.FETCHING);
 
     const chunkResponse = await fetch("/api/search", {
       method: "POST",
@@ -38,6 +44,8 @@ const Home: NextPage = () => {
       body: JSON.stringify({ chunks, query }),
     });
 
+    setRenderState(RenderState.RENDERING);
+
     const data = answerResponse.body as ReadableStream;
     const reader = data.getReader();
     const decoder = new TextDecoder();
@@ -52,8 +60,72 @@ const Home: NextPage = () => {
       const chunkValue = decoder.decode(value);
       setAnswer((prev) => {
         console.log({ prev, chunkValue });
-        return prev + chunkValue;
+        const raw = prev + chunkValue;
+        const trimmedContent = raw.replace(/^undefined|undefined$/g, '');
+        return trimmedContent.replace(/\n/g, '<br />');
       });
+    }
+
+    setRenderState(RenderState.LOADED);
+  };
+
+  const renderResponses = () => {
+    switch (renderState) {
+      case RenderState.EMPTY:
+        return <></>;
+      case RenderState.FETCHING:
+        return (
+          <>
+            <div className="font-bold text-2xl self-start">Answer</div>
+            <div className="animate-pulse mt-2 self-start w-full">
+              <div className="h-8 w-1/2 bg-gray-300 rounded"></div>
+              <div className="h-4 w-full bg-gray-300 rounded mt-4"></div>
+              <div className="h-4 w-full bg-gray-300 rounded mt-2"></div>
+              <div className="h-4 w-full bg-gray-300 rounded mt-2"></div>
+              <div className="h-4 w-full bg-gray-300 rounded mt-2"></div>
+            </div>
+          </>
+        );
+      case RenderState.RENDERING:
+        return (
+          <>
+            <div className="font-bold text-2xl self-start">Answer</div>
+            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked(answer)) }} className="self-start"></div>
+          </>
+        );
+      case RenderState.LOADED:
+        return (
+          <>
+            <div className="font-bold text-2xl self-start">Answer</div>
+            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked(answer)) }} className="self-start"></div>
+            <div className="font-bold text-2xl self-start mt-2">Related Passages</div>
+            {chunks && chunks.map((chunk) => {
+              const title_array = chunk.article_title.split(":");
+              const title = title_array.slice(0, -1).join(":");
+
+              return (
+                <div key={chunk.id} className="relative w-full bg-white shadow-md rounded-lg border border-black">
+                  <div className="p-4">
+                    <h3 className="text-xl font-bold mb-2">{title}</h3>
+                    <p className="text-gray-600">{chunk.content}</p>
+                  </div>
+                  <a
+                    href={chunk.article_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute top-3 right-3 text-gray-700 hover:text-gray-900"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                    </svg>
+                  </a>
+                </div>
+              )
+            })}
+          </>
+        );
+      default:
+        return <></>;
     }
   };
 
@@ -64,7 +136,7 @@ const Home: NextPage = () => {
         <meta name="description" content="Zuddl GPT FAQ Bot" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="container max-w-[750px]">
+      <main className="container max-w-[750px] mb-8">
         <div className="flex h-full w-full max-w-[750px] flex-col items-center gap-4 px-3 pt-4 sm:pt-28">
           <h1 className="scroll-m-20 text-3xl font-bold tracking-tight text-primary lg:text-4xl">
             zuddl GPT
@@ -73,7 +145,7 @@ const Home: NextPage = () => {
             AI-powered search for Zuddl&apos;s knowledge base
           </div>
           {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
-          <form className="relative w-full" onSubmit={handleSearch}>
+          <form className="relative w-full mb-4" onSubmit={handleSearch}>
             <SearchIcon className="absolute left-1 top-3 h-6 w-10 rounded-full opacity-90 sm:left-3 sm:top-4 sm:h-8" />
 
             <input
@@ -89,8 +161,7 @@ const Home: NextPage = () => {
               <ArrowRightIcon className="absolute right-2 top-2.5 h-7 w-7 rounded-full bg-primary p-1 text-white hover:cursor-pointer hover:opacity-80 sm:right-3 sm:top-3 sm:h-10 sm:w-10" />
             </button>
           </form>
-          {/* TODO: Markdown Parser */}
-          <div>{answer}</div>
+          {renderResponses()}
         </div>
       </main>
     </>
