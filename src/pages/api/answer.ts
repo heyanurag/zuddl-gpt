@@ -1,23 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/env.mjs";
+import { type OpenAIStreamPayload, type PGChunk } from "@/lib/types";
 import { getPrompt } from "@/lib/utils";
-import { OpenAIStream, type OpenAIStreamPayload } from "@/lib/OpenAIStream";
+import { OpenAIStream } from "@/lib/OpenAIStream";
 import { createClient } from "@supabase/supabase-js";
 
 export const config = {
   runtime: "edge",
   regions: "bom1", // location: ap-south-1 (optional)
-};
-
-export type PGChunk = {
-  id: number;
-  article_title: string;
-  article_url: string;
-  content: string;
-  content_length: number;
-  content_tokens: number;
-  embedding: number[];
-  similarity: number;
 };
 
 export const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_KEY);

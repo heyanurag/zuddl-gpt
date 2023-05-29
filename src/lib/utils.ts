@@ -1,9 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { createClient } from "@supabase/supabase-js";
-import { env } from "@/env.mjs";
 import { oneLine, stripIndent } from "common-tags";
-import { type PGChunk } from "@/pages/api/answer";
+import { type PGChunk } from "@/lib/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
