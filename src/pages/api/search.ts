@@ -10,7 +10,7 @@ export const config = {
 
 export const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_KEY);
 
-const answer = async (request: NextRequest): Promise<NextResponse> => {
+const search = async (request: NextRequest): Promise<NextResponse> => {
   try {
     const { query } = (await request.json()) as {
       query: string;
@@ -64,4 +64,4 @@ const answer = async (request: NextRequest): Promise<NextResponse> => {
   }
 };
 
-export default answer;
+export default search;

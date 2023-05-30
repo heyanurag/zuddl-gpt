@@ -43,6 +43,14 @@ export type EmbeddingResponse = {
   ];
 };
 
+export type ModerationResponse = {
+  results: [
+    {
+      flagged: boolean;
+    }
+  ];
+};
+
 export enum RenderState {
   EMPTY = "empty",
   FETCHING = "fetching",
