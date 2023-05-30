@@ -16,9 +16,6 @@ export const getPrompt = (query: string, chunks: PGChunk[]) => {
     is not explicitly written in the documentation, say
     "Sorry, I don't know how to help with that."`}
 
-    Retaled article links:
-    ${chunks?.map((d: PGChunk) => d.article_url).join("\n")}
-
     Context sections:
     ${chunks?.map((d: PGChunk) => d.content).join("\n\n")}
 
@@ -26,7 +23,7 @@ export const getPrompt = (query: string, chunks: PGChunk[]) => {
     ${query}
     """
 
-    Answer as markdown (also include all the related article links).
+    Answer as markdown (do not include any links in the answer).
   `;
 
   return prompt;
