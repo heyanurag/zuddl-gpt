@@ -40,7 +40,18 @@ const answer = async (request: NextRequest): Promise<NextResponse> => {
     return new NextResponse(stream);
   } catch (error) {
     console.error({ error });
-    return new NextResponse("Error", { status: 500 });
+
+    return new NextResponse(
+      JSON.stringify({
+        error: "Something went wrong. Please try again later.",
+      }),
+      {
+        status: 500,
+        headers: {
+          "content-type": "application/json;",
+        },
+      }
+    );
   }
 };
 

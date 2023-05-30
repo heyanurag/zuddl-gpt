@@ -37,7 +37,7 @@ const search = async (request: NextRequest): Promise<NextResponse> => {
     const json = (await moderationRes?.json()) as ModerationResponse;
     const isFlagged = json?.results[0]?.flagged;
 
-    if (isFlagged) {
+    if (!moderationRes.ok || isFlagged) {
       return new NextResponse(
         JSON.stringify({
           error:
@@ -94,7 +94,18 @@ const search = async (request: NextRequest): Promise<NextResponse> => {
     });
   } catch (error) {
     console.error({ error });
-    return new NextResponse("Error", { status: 500 });
+
+    return new NextResponse(
+      JSON.stringify({
+        error: "Something went wrong. Please try again later.",
+      }),
+      {
+        status: 500,
+        headers: {
+          "content-type": "application/json;",
+        },
+      }
+    );
   }
 };
 

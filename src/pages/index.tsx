@@ -21,7 +21,6 @@ const Home: NextPage = () => {
 
   const handleSearch = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(query);
 
     setAnswer("");
     setChunks([]);
@@ -37,8 +36,7 @@ const Home: NextPage = () => {
 
     if (chunkResponse.status !== 200) {
       const errRes = (await chunkResponse.json()) as { error: string };
-      console.log(errRes);
-      setAnswer(errRes?.error || "Error");
+      setAnswer(errRes?.error);
       setRenderState(RenderState.ERROR);
       return;
     }
@@ -53,6 +51,13 @@ const Home: NextPage = () => {
       },
       body: JSON.stringify({ chunks, query }),
     });
+
+    if (answerResponse.status !== 200) {
+      const errRes = (await answerResponse.json()) as { error: string };
+      setAnswer(errRes?.error);
+      setRenderState(RenderState.ERROR);
+      return;
+    }
 
     setRenderState(RenderState.RENDERING);
 
@@ -69,7 +74,6 @@ const Home: NextPage = () => {
       done = doneReading;
       const chunkValue = decoder.decode(value);
       setAnswer((prev) => {
-        console.log({ prev, chunkValue });
         const raw = prev + chunkValue;
         const trimmedContent = raw.replace(/^undefined|undefined$/g, "");
         return trimmedContent;
@@ -90,7 +94,7 @@ const Home: NextPage = () => {
             <Loader />
           </>
         );
-      case RenderState.RENDERING || RenderState.ERROR:
+      case RenderState.RENDERING:
         return (
           <>
             <div className="self-start text-2xl font-bold">Answer</div>
@@ -103,7 +107,7 @@ const Home: NextPage = () => {
             <div className="self-start text-2xl font-bold">Answer</div>
             <Answer answer={answer} />
             <div className="my-4 self-start text-2xl font-bold">
-              Related Passages
+              Related Articles
             </div>
             {chunks &&
               chunks.map((chunk) => {
