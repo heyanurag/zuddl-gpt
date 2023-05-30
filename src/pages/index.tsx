@@ -35,6 +35,14 @@ const Home: NextPage = () => {
       body: JSON.stringify({ query }),
     });
 
+    if (chunkResponse.status !== 200) {
+      const errRes = (await chunkResponse.json()) as { error: string };
+      console.log(errRes);
+      setAnswer(errRes?.error || "Error");
+      setRenderState(RenderState.ERROR);
+      return;
+    }
+
     const chunks = (await chunkResponse.json()) as ChunkData[];
     setChunks(chunks);
 
@@ -82,7 +90,7 @@ const Home: NextPage = () => {
             <Loader />
           </>
         );
-      case RenderState.RENDERING:
+      case RenderState.RENDERING || RenderState.ERROR:
         return (
           <>
             <div className="self-start text-2xl font-bold">Answer</div>
@@ -101,6 +109,13 @@ const Home: NextPage = () => {
               chunks.map((chunk) => {
                 return <Passage key={chunk.id} chunk={chunk} />;
               })}
+          </>
+        );
+      case RenderState.ERROR:
+        return (
+          <>
+            <div className="self-start text-2xl font-bold">Answer</div>
+            <Answer answer={answer} />
           </>
         );
       default:

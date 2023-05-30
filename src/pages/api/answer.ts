@@ -1,10 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/env.mjs";
-import {
-  type OpenAIStreamPayload,
-  type PGChunk,
-  type ModerationResponse,
-} from "@/lib/types";
+import { type OpenAIStreamPayload, type PGChunk } from "@/lib/types";
 import { getPrompt } from "@/lib/utils";
 import { OpenAIStream } from "@/lib/OpenAIStream";
 import { createClient } from "@supabase/supabase-js";
@@ -24,29 +20,6 @@ const answer = async (request: NextRequest): Promise<NextResponse> => {
     };
 
     const processedQuery = query.replace(/\n/g, " ");
-
-    const moderationRes = await fetch("https://api.openai.com/v1/moderations", {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-      },
-      method: "POST",
-      body: JSON.stringify({
-        input: processedQuery,
-      }),
-    });
-
-    const json = (await moderationRes?.json()) as ModerationResponse;
-    const isFlagged = json?.results[0]?.flagged;
-
-    if (isFlagged) {
-      return new NextResponse(
-        "We cannot process this request. Query violates our usage policies.",
-        {
-          status: 403,
-        }
-      );
-    }
 
     const prompt = getPrompt(processedQuery, chunks);
 

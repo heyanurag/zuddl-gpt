@@ -1,7 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/env.mjs";
 import { createClient } from "@supabase/supabase-js";
-import { type EmbeddingResponse, type PGChunk } from "@/lib/types";
+import {
+  type ModerationResponse,
+  type EmbeddingResponse,
+  type PGChunk,
+} from "@/lib/types";
 
 export const config = {
   runtime: "edge",
@@ -19,6 +23,35 @@ const search = async (request: NextRequest): Promise<NextResponse> => {
     const processedQuery = query.replace(/\n/g, " ");
     console.log({ processedQuery });
 
+    const moderationRes = await fetch("https://api.openai.com/v1/moderations", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+      },
+      method: "POST",
+      body: JSON.stringify({
+        input: processedQuery,
+      }),
+    });
+
+    const json = (await moderationRes?.json()) as ModerationResponse;
+    const isFlagged = json?.results[0]?.flagged;
+
+    if (isFlagged) {
+      return new NextResponse(
+        JSON.stringify({
+          error:
+            "We cannot process this request. Query violates our usage policies.",
+        }),
+        {
+          status: 403,
+          headers: {
+            "content-type": "application/json;",
+          },
+        }
+      );
+    }
+
     const queryEmbeddingRes = await fetch(
       "https://api.openai.com/v1/embeddings",
       {
@@ -34,8 +67,9 @@ const search = async (request: NextRequest): Promise<NextResponse> => {
       }
     );
 
-    const json = (await queryEmbeddingRes?.json()) as EmbeddingResponse;
-    const queryEmbedding = `[${String(json?.data[0]?.embedding)}]`;
+    const embeddingJson =
+      (await queryEmbeddingRes?.json()) as EmbeddingResponse;
+    const queryEmbedding = `[${String(embeddingJson?.data[0]?.embedding)}]`;
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { data: chunks } = await supabase.rpc("article_search", {

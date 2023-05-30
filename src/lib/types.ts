@@ -56,4 +56,5 @@ export enum RenderState {
   FETCHING = "fetching",
   RENDERING = "rendering",
   LOADED = "loaded",
+  ERROR = "error",
 }
