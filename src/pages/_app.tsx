@@ -2,6 +2,7 @@ import { type AppType } from "next/dist/shared/lib/utils";
 import "@/styles/globals.css";
 import { fontSans } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
+import { Analytics } from "@vercel/analytics/react";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
@@ -12,6 +13,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       )}
     >
       <Component {...pageProps} />
+      <Analytics />
     </main>
   );
 };
