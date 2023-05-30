@@ -20,11 +20,8 @@ const answer = async (request: NextRequest): Promise<NextResponse> => {
     };
 
     const processedQuery = query.replace(/\n/g, " ");
-    console.log({ processedQuery });
 
     const prompt = getPrompt(processedQuery, chunks);
-
-    console.log({ prompt });
 
     const payload: OpenAIStreamPayload = {
       model: "gpt-3.5-turbo",
