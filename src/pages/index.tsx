@@ -114,7 +114,7 @@ const Home: NextPage = () => {
       case RenderState.ERROR:
         return (
           <>
-            <div className="self-start text-2xl font-bold">Answer</div>
+            <div className="self-start text-2xl font-bold">Error :(</div>
             <Answer answer={answer} />
           </>
         );
