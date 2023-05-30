@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import Head from "next/head";
 import { type NextPage } from "next";
-import { type ChunkData, RenderState } from "@/lib/types";
+import { RenderState, type ChunkData } from "@/lib/types";
 import Loader from "@/components/Loader";
 import Answer from "@/components/Answer";
 import Passage from "@/components/Passage";
@@ -123,10 +123,10 @@ const Home: NextPage = () => {
           <div className="text-center text-lg">
             AI-powered search for Zuddl&apos;s knowledge base
           </div>
-          {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
           <SearchForm
             query={query}
             setQuery={setQuery}
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             handleSearch={handleSearch}
             isDisabled={disabledSearchField}
           />
