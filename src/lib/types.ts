@@ -42,3 +42,10 @@ export type EmbeddingResponse = {
     }
   ];
 };
+
+export enum RenderState {
+  EMPTY = "empty",
+  FETCHING = "fetching",
+  RENDERING = "rendering",
+  LOADED = "loaded",
+}

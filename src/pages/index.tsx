@@ -1,17 +1,12 @@
 import { useState, type FormEvent } from "react";
 import Head from "next/head";
 import { type NextPage } from "next";
-import { SearchIcon, ArrowRightIcon } from "lucide-react";
-import { type ChunkData } from "@/lib/types";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { type ChunkData, RenderState } from "@/lib/types";
+import Loader from "@/components/Loader";
+import Answer from "@/components/Answer";
+import Passage from "@/components/Passage";
+import SearchForm from "@/components/Search";
 
-enum RenderState {
-  EMPTY = "empty",
-  FETCHING = "fetching",
-  RENDERING = "rendering",
-  LOADED = "loaded",
-}
 
 const Home: NextPage = () => {
   const [query, setQuery] = useState<string>("");
@@ -19,11 +14,12 @@ const Home: NextPage = () => {
   const [chunks, setChunks] = useState<ChunkData[]>([]);
   const [renderState, setRenderState] = useState<RenderState>(RenderState.EMPTY);
 
+  const disabledSearchField = renderState === RenderState.FETCHING || renderState === RenderState.RENDERING;
+
   const handleSearch = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log(query);
 
-    setQuery("");
     setAnswer("");
     setChunks([]);
     setRenderState(RenderState.FETCHING);
@@ -80,61 +76,25 @@ const Home: NextPage = () => {
         return (
           <>
             <div className="font-bold text-2xl self-start">Answer</div>
-            <div className="animate-pulse mt-2 self-start w-full">
-              <div className="h-8 w-1/2 bg-gray-300 rounded"></div>
-              <div className="h-4 w-full bg-gray-300 rounded mt-4"></div>
-              <div className="h-4 w-full bg-gray-300 rounded mt-2"></div>
-              <div className="h-4 w-full bg-gray-300 rounded mt-2"></div>
-              <div className="h-4 w-full bg-gray-300 rounded mt-2"></div>
-            </div>
+            <Loader />
           </>
         );
       case RenderState.RENDERING:
         return (
           <>
             <div className="font-bold text-2xl self-start">Answer</div>
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              linkTarget="_blank"
-              className="prose"
-            >
-              {answer}
-            </ReactMarkdown>
+            <Answer answer={answer} />
           </>
         );
       case RenderState.LOADED:
         return (
           <>
             <div className="font-bold text-2xl self-start">Answer</div>
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              linkTarget="_blank"
-              className="prose"
-            >
-              {answer}
-            </ReactMarkdown>
+            <Answer answer={answer} />
             <div className="font-bold text-2xl self-start my-4">Related Passages</div>
             {chunks && chunks.map((chunk) => {
-              const title_array = chunk.article_title.split(":");
-              const title = title_array.slice(0, -1).join(":");
-
               return (
-                <div key={chunk.id} className="mb-6 relative w-full bg-white shadow-md rounded-lg border border-black">
-                  <div className="p-4">
-                    <h3 className="text-xl font-bold mb-2">{title}</h3>
-                    <p className="text-gray-600">{chunk.content}</p>
-                  </div>
-                  <a
-                    href={chunk.article_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="absolute top-3 right-3 text-gray-700 hover:text-gray-900"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                    </svg>
-                  </a>
-                </div>
+                <Passage key={chunk.id} chunk={chunk} />
               )
             })}
           </>
@@ -160,25 +120,8 @@ const Home: NextPage = () => {
             AI-powered search for Zuddl&apos;s knowledge base
           </div>
           {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
-          <form className="relative w-full mb-4" onSubmit={handleSearch}>
-            <SearchIcon className="absolute left-1 top-3 h-6 w-10 rounded-full opacity-90 sm:left-3 sm:top-4 sm:h-8" />
-
-            <input
-              className="h-12 w-full rounded-full border border-zinc-600 pl-11 pr-12 focus:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-800 sm:h-16 sm:py-2 sm:pl-16 sm:pr-16 sm:text-lg"
-              type="text"
-              placeholder="How do I add a virtual background?"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              required
-            />
-
-            <button type="submit">
-              <ArrowRightIcon className="absolute right-2 top-2.5 h-7 w-7 rounded-full bg-primary p-1 text-white hover:cursor-pointer hover:opacity-80 sm:right-3 sm:top-3 sm:h-10 sm:w-10" />
-            </button>
-          </form>
-          <div>
-            {renderResponses()}
-          </div>
+          <SearchForm query={query} setQuery={setQuery} handleSearch={handleSearch} isDisabled={disabledSearchField} />
+          {renderResponses()}
         </div>
       </main>
     </>
