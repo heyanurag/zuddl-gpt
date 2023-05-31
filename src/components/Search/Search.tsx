@@ -16,8 +16,8 @@ export const SearchForm = ({ query, setQuery, handleSearch, isDisabled }: ISearc
                 disabled={isDisabled}
             />
 
-            <button type="submit">
-                <ArrowRightIcon className="absolute right-2 top-2.5 h-7 w-7 rounded-full bg-primary p-1 text-white hover:cursor-pointer hover:opacity-80 sm:right-3 sm:top-3 sm:h-10 sm:w-10" />
+            <button disabled={isDisabled} type="submit" className="absolute right-2 top-2.5 h-7 w-7 rounded-full bg-primary p-1 text-white hover:cursor-pointer hover:opacity-80 sm:right-3 sm:top-3 sm:h-10 sm:w-10 disabled:opacity-60 disabled:cursor-not-allowed">
+                <ArrowRightIcon size={30} />
             </button>
         </form>
     );

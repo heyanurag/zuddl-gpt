@@ -15,7 +15,7 @@ const Home: NextPage = () => {
     RenderState.EMPTY
   );
 
-  const disabledSearchField =
+  const disableSubmit =
     renderState === RenderState.FETCHING ||
     renderState === RenderState.RENDERING;
 
@@ -90,7 +90,6 @@ const Home: NextPage = () => {
       case RenderState.FETCHING:
         return (
           <>
-            <div className="self-start text-2xl font-bold">Answer</div>
             <Loader />
           </>
         );
@@ -147,7 +146,7 @@ const Home: NextPage = () => {
             setQuery={setQuery}
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             handleSearch={handleSearch}
-            isDisabled={disabledSearchField}
+            isDisabled={disableSubmit}
           />
           {renderResponses()}
         </div>
