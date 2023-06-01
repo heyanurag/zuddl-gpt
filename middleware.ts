@@ -28,7 +28,3 @@ export default async function middleware(
     ? NextResponse.next()
     : NextResponse.redirect(new URL("/blocked", request.url));
 }
-
-export const config = {
-  matcher: "/",
-};
