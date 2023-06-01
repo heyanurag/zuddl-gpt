@@ -19,7 +19,10 @@ const ratelimit = new Ratelimit({
 export default async function middleware(
   request: NextRequest
 ): Promise<Response | undefined> {
+  console.log("middleware");
   const ip = request.ip ?? "127.0.0.1";
+  console.log("ip", ip);
+  console.log("upstash_url", env.UPSTASH_REDIS_REST_URL);
   const { success } = await ratelimit.limit(ip);
   return success
     ? NextResponse.next()
