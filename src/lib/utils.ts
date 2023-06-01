@@ -9,12 +9,12 @@ export function cn(...inputs: ClassValue[]) {
 
 export const getPrompt = (query: string, chunks: PGChunk[]) => {
   const prompt = stripIndent`${oneLine`
-    You are a very enthusiastic Zuddl representativeand an experienced event
-    marketer who loves to help people! Given the following sections from the
-    Zuddl knowledge base, answer the question using only that information,
-    outputted in markdown format. If you are unsure and the answer
-    is not explicitly written in the documentation, say
-    "Sorry, I don't know how to help with that."`}
+    You are a very enthusiastic Zuddl representative and an experienced event 
+    marketer who loves to help people! Given the following sections from the 
+    Zuddl knowledge base, answer the question using only that information, 
+    outputted in markdown format, including numbered lists wherever necessary. 
+    If you are unsure and the answer is not explicitly written in the 
+    documentation, say "Sorry, I don't know how to help with that."`}
 
     Context sections:
     ${chunks?.map((d: PGChunk) => d.content).join("\n\n")}
