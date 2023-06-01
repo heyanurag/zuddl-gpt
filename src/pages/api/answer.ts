@@ -4,6 +4,7 @@ import { type OpenAIStreamPayload, type PGChunk } from "@/lib/types";
 import { getPrompt } from "@/lib/utils";
 import { OpenAIStream } from "@/lib/OpenAIStream";
 import { createClient } from "@supabase/supabase-js";
+import { rateLimitCheck } from "@/lib/rate-limit";
 
 export const config = {
   runtime: "edge",
@@ -13,6 +14,12 @@ export const config = {
 export const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_KEY);
 
 const answer = async (request: NextRequest): Promise<NextResponse> => {
+  const res = await rateLimitCheck(request);
+
+  if (res) {
+    return res;
+  }
+
   try {
     const { chunks, query } = (await request.json()) as {
       chunks: PGChunk[];

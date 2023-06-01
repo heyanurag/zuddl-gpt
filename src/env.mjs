@@ -14,8 +14,8 @@ export const env = createEnv({
     RESPONSE_MAX_TOKENS: z.number().int().min(9).max(1024),
     UPSTASH_REDIS_REST_URL: z.string().min(10),
     UPSTASH_REDIS_REST_KEY: z.string().min(10),
-    UPSTASH_NUMBER_OF_REQUESTS: z.number().int().min(1).max(5),
-    UPSTASH_REQUESTS_INTERVAL: z.number().int().min(3).max(10),
+    UPSTASH_NUMBER_OF_REQUESTS: z.number().int().min(2).max(15),
+    UPSTASH_REQUESTS_INTERVAL: z.number().int().min(5).max(90),
   },
 
   /**

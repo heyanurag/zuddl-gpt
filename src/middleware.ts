@@ -1,20 +1,5 @@
+import { ratelimit } from "@/config";
 import { type NextRequest, NextResponse } from "next/server";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
-import { env } from "@/env.mjs";
-
-const redis = new Redis({
-  url: env.UPSTASH_REDIS_REST_URL,
-  token: env.UPSTASH_REDIS_REST_KEY,
-});
-
-const ratelimit = new Ratelimit({
-  redis: redis,
-  limiter: Ratelimit.slidingWindow(
-    env.UPSTASH_NUMBER_OF_REQUESTS,
-    `${env.UPSTASH_REQUESTS_INTERVAL}s`
-  ),
-});
 
 export default async function middleware(
   request: NextRequest
@@ -29,5 +14,5 @@ export default async function middleware(
 }
 
 export const config = {
-  matcher : "/",
+  matcher: "/",
 };

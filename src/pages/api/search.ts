@@ -6,6 +6,7 @@ import {
   type EmbeddingResponse,
   type PGChunk,
 } from "@/lib/types";
+import { rateLimitCheck } from "@/lib/rate-limit";
 
 export const config = {
   runtime: "edge",
@@ -15,6 +16,12 @@ export const config = {
 export const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_KEY);
 
 const search = async (request: NextRequest): Promise<NextResponse> => {
+  const res = await rateLimitCheck(request);
+
+  if (res) {
+    return res;
+  }
+
   try {
     const { query } = (await request.json()) as {
       query: string;
